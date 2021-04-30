@@ -1,7 +1,8 @@
 from tkinter import *
 from math import floor
 
-CanvasW, CanvasH = 400, 400
+CanvasW, CanvasH = 800, 800
+blocksPW = 40
 
 
 def rgb(value):
@@ -9,55 +10,40 @@ def rgb(value):
 
 
 def paint(event):
-    global numOfElements, elements, grid
-    if event.x >= 400 or event.x < 0 or event.y >= 400 or event.y < 0:
+    global elements, grid
+    if event.x >= CanvasW or event.x < 0 or event.y >= CanvasH or event.y < 0:
         return
-    x, y = floor(event.x/40), floor(event.y/40)
+    x, y = floor(event.x/20), floor(event.y/20)
 
-    if grid[y*10+x] == 0:
-        grid[y*10+x] = 1
+    if grid[y*blocksPW+x] == 0:
+        grid[y*blocksPW+x] = 1
 
 
 def check():
     global grid, newGrid
-    for i in range(10):
-        for j in range(10):
-            x = 0
-            # -------------------------------------Check neighbour cells
-            if i != 0:
-                if grid[(i-1)*10 + j-1] == 1:
-                    x += 1
-                if grid[(i-1)*10 + j] == 1:
-                    x += 1
-                if j != 9:
-                    if grid[(i-1)*10 + j+1] == 1:
-                        x += 1
-            if grid[i*10 + j-1] == 1:
-                x += 1
-            if j != 9:
-                if grid[i*10 + j+1] == 1:
-                    x += 1
-                if i != 9:
-                    if grid[(i+1)*10 + j+1] == 1:
-                        x += 1
-            if i != 9 and j != 0:
-                if grid[(i+1)*10 + j-1] == 1:
-                    x += 1
-            if i != 9:
-                if grid[(i+1)*10 + j] == 1:
-                    x += 1
-            # --------------------------------------Decide to live/die/born
-            if x == 2 and grid[i*10+j] == 1:
-                newGrid[i*10+j] = 1
-            elif x == 3:
-                newGrid[i*10+j] = 1
+    newGrid = [0]*blocksPW*blocksPW
+    for y in range(blocksPW):
+        for x in range(blocksPW):
+            sum = 0
+            for i in range(-1, 2):
+                for j in range(-1, 2):
+                    col = (x+j+blocksPW) % blocksPW
+                    row = (y+i+blocksPW) % blocksPW
+                    if grid[row*blocksPW+col] == 1:
+                        sum += 1
+            sum -= grid[y*blocksPW+x]
+            if sum == 3 and grid[y*blocksPW+x] == 0:
+                newGrid[y*blocksPW+x] = 1
+            elif grid[y*blocksPW+x] == 1 and (sum < 2 or sum > 3):
+                newGrid[y*blocksPW+x] = 0
             else:
-                newGrid[i*10+j] = 0
+                newGrid[y*blocksPW+x] = grid[y*blocksPW+x]
 
 
 def pause():
     global paused, pauseButton
     if paused:
+        check()
         paused = False
         pauseButton.configure(text="Pause")
     else:
@@ -67,26 +53,27 @@ def pause():
 
 def reset():
     global grid, newGrid, paused
-    grid = [0]*100
-    newGrid = [0]*100
+    x = blocksPW * blocksPW
+    grid = [0]*x
+    newGrid = [0]*x
     if not paused:
         pause()
 
 
 def main():
-    global speed
+    global speed, grid, newGrid
     canvas.delete("all")
+
+    for i in range(blocksPW):
+        for j in range(blocksPW):
+            if grid[i*blocksPW+j] != 0:
+                canvas.create_rectangle(
+                    j*20, i*20, j*20+20, i*20+20, fill=rgb((240, 240, 240)))
 
     if not paused:
         check()
+        grid = newGrid
 
-    for i in range(10):
-        for j in range(10):
-            if not paused:
-                grid[i*10+j] = newGrid[i*10+j]
-            if grid[i*10+j] != 0:
-                canvas.create_rectangle(
-                    j*40, i*40, j*40+40, i*40+40, fill=rgb((240, 240, 240)))
     if playSpeed.get() != "":
         if int(playSpeed.get()) != speed:
             speed = int(playSpeed.get())
@@ -96,8 +83,9 @@ def main():
         canvas.after(10, main)
 
 
-grid = [0]*100
-newGrid = [0]*100
+x = blocksPW * blocksPW
+grid = [0]*x
+newGrid = [0]*x
 paused = True
 window = Tk()
 speed = 200
