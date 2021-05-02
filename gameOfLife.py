@@ -1,4 +1,5 @@
 from tkinter import *
+from random import randint
 from math import floor
 
 CanvasW, CanvasH = 800, 800
@@ -60,6 +61,15 @@ def reset():
         pause()
 
 
+def setRandom():
+    global grid, paused
+    if not paused:
+        pause()
+    for i in range(blocksPW):
+        for j in range(blocksPW):
+            grid[i*blocksPW+j] = randint(0, 1)
+
+
 def main():
     global speed, grid, newGrid
     canvas.delete("all")
@@ -75,7 +85,7 @@ def main():
         grid = newGrid
 
     if playSpeed.get() != "":
-        if int(playSpeed.get()) != speed:
+        if int(playSpeed.get()) != speed and int(playSpeed.get()) != 0:
             speed = int(playSpeed.get())
     if not paused:
         canvas.after(speed, main)
@@ -87,22 +97,27 @@ x = blocksPW * blocksPW
 grid = [0]*x
 newGrid = [0]*x
 paused = True
+speed = 100
+
 window = Tk()
-speed = 200
 window.configure(bg=rgb((15, 15, 15)), width=400, height=500)
-window.title("Simulation")
+window.title("Game of life")
+
 canvas = Canvas(window, width=CanvasW, height=CanvasH, bg=rgb((30, 30, 30)))
 pauseButton = Button(window, text="Play", font="Arial 10 bold", bd=0, width=10,
                      fg=rgb((0, 0, 0)), command=pause)
 resetButton = Button(window, text="RESET", font="Arial 10 bold", bd=0, width=10,
                      fg=rgb((0, 0, 0)), command=reset)
+randomButton = Button(window, text="Random", font="Arial 10 bold", bd=0, width=10,
+                      fg=rgb((0, 0, 0)), command=setRandom)
 playSpeed = Entry(window, width=10, font="Arial 10", bd=0, justify='center')
 playSpeed.insert(END, "200")
 
-canvas.grid(row=0, column=0, columnspan=3)
+canvas.grid(row=0, column=0, columnspan=4)
 playSpeed.grid(row=1, column=0)
 pauseButton.grid(row=1, column=1)
 resetButton.grid(row=1, column=2)
+randomButton.grid(row=1, column=3)
 
 main()
 
