@@ -20,6 +20,13 @@ def paint(event):
         grid[y*blocksPW+x] = 1
 
 
+def delete(event):
+    if event.x >= CanvasW or event.x < 0 or event.y >= CanvasH or event.y < 0:
+        return
+    x, y = floor(event.x/20), floor(event.y/20)
+    grid[y*blocksPW+x] = 0
+
+
 def check():
     global grid, newGrid
     newGrid = [0]*blocksPW*blocksPW
@@ -111,7 +118,7 @@ resetButton = Button(window, text="RESET", font="Arial 10 bold", bd=0, width=10,
 randomButton = Button(window, text="Random", font="Arial 10 bold", bd=0, width=10,
                       fg=rgb((0, 0, 0)), command=setRandom)
 playSpeed = Entry(window, width=10, font="Arial 10", bd=0, justify='center')
-playSpeed.insert(END, "200")
+playSpeed.insert(END, "100")
 
 canvas.grid(row=0, column=0, columnspan=4)
 playSpeed.grid(row=1, column=0)
@@ -123,5 +130,7 @@ main()
 
 canvas.bind("<B1-Motion>", paint)
 canvas.bind("<Button-1>", paint)
+canvas.bind("<B3-Motion>", delete)
+canvas.bind("<Button-3>", delete)
 
 canvas.mainloop()
